@@ -1,0 +1,9 @@
+/* CSS for JupterLiteXBlock */
+
+.jupyterlitexblock_block .count {
+    font-weight: bold;
+}
+
+.jupyterlitexblock_block p {
+    cursor: pointer;
+}
