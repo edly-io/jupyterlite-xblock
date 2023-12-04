@@ -1,4 +1,4 @@
-"""Setup for jupyterlitexblock XBlock."""
+"""Setup for Jupyterlite XBlock."""
 
 
 import os
@@ -23,10 +23,10 @@ def package_data(pkg, roots):
 
 
 setup(
-    name='jupyterlitexblock-xblock',
-    version='0.1',
-    description='jupyterlitexblock XBlock',   # TODO: write a better description.
-    license='UNKNOWN',          # TODO: choose a license: 'AGPL v3' and 'Apache 2.0' are popular.
+    name='jupyterlite-xblock',
+    version='16.0.4',
+    description='Jupyterlite XBlock to embed jupyterlite service inside open edX',
+    license='AGPL v3',
     packages=[
         'jupyterlitexblock',
     ],
@@ -35,7 +35,7 @@ setup(
     ],
     entry_points={
         'xblock.v1': [
-            'jupyterlitexblock = jupyterlitexblock:JupterLiteXBlock',
+            'jupyterlite = jupyterlitexblock:JupterLiteXBlock',
         ]
     },
     package_data=package_data("jupyterlitexblock", ["static", "public"]),
