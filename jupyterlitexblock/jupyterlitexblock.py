@@ -12,6 +12,7 @@ import json
 import os
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.utils.module_loading import import_string
 from webob import Response
 
 
@@ -81,7 +82,8 @@ class JupterLiteXBlock(XBlock):
             storage_func = self.xblock_settings.get("STORAGE_FUNC", get_default_storage)
             if isinstance(storage_func, str):
                 storage_func = import_string(storage_func)
-            self._storage = storage_func(self)
+            bucket_name = self.xblock_settings.get("S3_BUCKET_NAME", None)
+            self._storage = storage_func(self, bucket_name)
 
         return self._storage
 

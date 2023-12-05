@@ -1,7 +1,8 @@
 /* Javascript for JupterLiteXBlock. */
 function JupterLiteXBlock(runtime, element) {
 
-    $(element).find('.save-button').bind('click', function () {
+    $(element).find('.save-button').bind('click', function (event) {
+        event.preventDefault();
         var formData = new FormData();
         var jupyterliteUrl = $(element).find('input[name=jupyterlite_url]').val();
         var default_notebook = $(element).find('#default_notebook').prop('files')[0];

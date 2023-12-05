@@ -17,7 +17,7 @@ class S3JupyterLiteStorage(S3Boto3Storage):
         )
 
 
-def s3(xblock):
+def s3(xblock, bucket_name=None):
     """
     Creates and returns an instance of the S3JupyterLiteStorage class.
 
@@ -27,13 +27,12 @@ def s3(xblock):
 
     Args:
         xblock (XBlock): An instance of the JupyterLite XBlock.
+        bucket_name (String): Name of the bucket where assets will be uploaded
 
     Returns:
         S3JupyterLiteStorage: An instance of the S3JupyterLiteStorage class.
     """
-    bucket_name = xblock.xblock_settings.get(
-        "S3_BUCKET_NAME", settings.AWS_STORAGE_BUCKET_NAME
-    )
+    
     return S3JupyterLiteStorage(
         xblock=xblock,
         bucket_name=bucket_name,
