@@ -12,10 +12,12 @@ import json
 import os
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.utils.module_loading import import_string
 from webob import Response
 
 
 log = logging.getLogger(__name__)
+
 
 @XBlock.wants("settings")
 class JupterLiteXBlock(XBlock):
@@ -37,19 +39,13 @@ class JupterLiteXBlock(XBlock):
         help="The default notebook for the JupyterLite service",
         default=""
     )
-    viewed_by_learner = String(
-        display_name="Saved Notebook URLs",
-        default="",
-        scope=Scope.user_state,
-        help="List of notebook URLs saved by the learner."
-    )
     display_name = String(
-        display_name=("JupyterLite "),
+        display_name=("JupyterLite"),
         help=("Display name for this module"),
         default="JupyterLite Notebook",
         scope=Scope.settings
     )
-    
+
     def notebook_location(self):
         """
         Notebooks will be stored in a media folder with this name
@@ -73,6 +69,24 @@ class JupterLiteXBlock(XBlock):
         """
         return os.path.join(self.notebook_location(), self.location.block_id)
 
+    @property
+    def storage(self):
+        """
+        Return the storage backend used to store the assets of this xblock. This is a cached property.
+        """
+        if not getattr(self, "_storage", None):
+
+            def get_default_storage(_xblock):
+                return default_storage
+
+            storage_func = self.xblock_settings.get("STORAGE_FUNC", get_default_storage)
+            if isinstance(storage_func, str):
+                storage_func = import_string(storage_func)
+            bucket_name = self.xblock_settings.get("S3_BUCKET_NAME", None)
+            self._storage = storage_func(self, bucket_name)
+
+        return self._storage
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
@@ -87,18 +101,7 @@ class JupterLiteXBlock(XBlock):
     def student_view(self, context=None):
         file_name = self.default_notebook
         base_url = self.jupyterlite_url
-        notebook_url = '{}?fromURL={}'.format(base_url, file_name)
-        if notebook_url in self.viewed_by_learner.split(','):
-            # If notebook URL is already in the string, set fromURL to an empty string
-            notebook_url = '{}?fromURL='.format(base_url)
-        else:
-            if self.viewed_by_learner:
-                self.viewed_by_learner += ',' + notebook_url
-            else:
-                self.viewed_by_learner = notebook_url
-            self.save()
-
-        jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(notebook_url)
+        jupyterlite_iframe = '<iframe src="{}?fromURL={}" width="100%" height="600px" style="border: none;"></iframe>'.format(base_url, file_name)
         html = self.resource_string("static/html/jupyterlitexblock.html").format(jupyterlite_iframe=jupyterlite_iframe, self=self)
         frag = Fragment(html)
         frag.initialize_js('JupterLiteXBlock')
@@ -124,11 +127,8 @@ class JupterLiteXBlock(XBlock):
         return frag
     
     def save_file(self, uploaded_file):
-        path = default_storage.save(f'{self.folder_base_path}/{uploaded_file.name}', ContentFile(uploaded_file.read()))
-        scheme = "https" if settings.HTTPS == "on" else "http"
-        root_url = f'{scheme}://{settings.CMS_BASE}'
-        tmp_file = os.path.join(settings.MEDIA_ROOT, path)
-        uploaded_file_url = root_url+tmp_file.replace('/openedx','')
+        path = self.storage.save(f'{self.folder_base_path}/{uploaded_file.name}', ContentFile(uploaded_file.read()))
+        uploaded_file_url = self.storage.url(path)
         return uploaded_file_url
 
     @XBlock.handler

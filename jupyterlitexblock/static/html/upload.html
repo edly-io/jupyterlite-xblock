@@ -17,7 +17,8 @@
                 <label class="label setting-label" for="default_notebook">{% trans "Upload .ipynb file" %}</label>
                 <input class="input setting-input" name="default_notebook" id="default_notebook" type="file" accept=".ipynb" value="{{ notebook_name }}"  />
             </div>
-        {% if notebook_name %}<div class="tip setting-help "><span><b>{% trans "Currently:" %}</b> {{ notebook_name }}</span></div>{% endif %}
+            {% if notebook_name %}<div class="tip setting-help "><span><b>{% trans "Currently:" %}</b> {{ notebook_name }}</span></div>{% endif %}
+      
         </li>
 
     </ul>
