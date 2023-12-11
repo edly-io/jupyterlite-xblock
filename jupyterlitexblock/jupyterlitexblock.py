@@ -6,10 +6,9 @@ from xblock.core import XBlock
 from django.core.files.base import ContentFile
 from xblock.fields import Scope, String
 from django.template import Context, Template
-import urllib.parse
 import logging
 import json
-import os, time
+import os
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.utils.module_loading import import_string
@@ -149,6 +148,7 @@ class JupterLiteXBlock(XBlock):
         folder_path = self.folder_base_path
         if not self.storage.exists(folder_path):
             return
+        
         existing_files = self.storage.listdir(folder_path)[1]
         for filename in existing_files:
             file_path = f"{folder_path}/{filename}"
@@ -165,6 +165,7 @@ class JupterLiteXBlock(XBlock):
             root_url = f'{scheme}://{settings.CMS_BASE}'
             tmp_file = os.path.join(settings.MEDIA_ROOT, path)
             uploaded_file_url = root_url+tmp_file.replace('/openedx','')
+            
         return uploaded_file_url
     
     @XBlock.handler
