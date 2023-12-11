@@ -82,7 +82,7 @@ class JupterLiteXBlock(XBlock):
         """
         if not getattr(self, "_storage", None):
 
-            def get_default_storage(_xblock):
+            def get_default_storage(_xblock, bucket_name):
                 return default_storage
 
             storage_func = self.xblock_settings.get("STORAGE_FUNC", get_default_storage)
