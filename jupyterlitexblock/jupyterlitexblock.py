@@ -158,13 +158,12 @@ class JupterLiteXBlock(XBlock):
         self.delete_existing_files()
         path = self.storage.save(f'{self.folder_base_path}/{uploaded_file.name}', ContentFile(uploaded_file.read()))
         url = self.storage.url(path)
-        if "https://" in url or "http://" in url:
+        if url.startswith(('http://', 'https://')):
             uploaded_file_url = url
         else:
             scheme = "https" if settings.HTTPS == "on" else "http"
             root_url = f'{scheme}://{settings.CMS_BASE}'
-            tmp_file = os.path.join(settings.MEDIA_ROOT, path)
-            uploaded_file_url = root_url+tmp_file.replace('/openedx','')
+            uploaded_file_url = root_url+url
             
         return uploaded_file_url
     
