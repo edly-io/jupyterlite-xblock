@@ -6,7 +6,6 @@ from xblock.core import XBlock
 from django.core.files.base import ContentFile
 from xblock.fields import Scope, String
 from django.template import Context, Template
-import urllib.parse
 import logging
 import json
 import os
@@ -44,6 +43,12 @@ class JupterLiteXBlock(XBlock):
         help=("Display name for this module"),
         default="JupyterLite Notebook",
         scope=Scope.settings
+    )
+    viewed_by_learner = String(
+        display_name="Saved Notebook URLs",
+        default="",
+        scope=Scope.user_state,
+        help="List of notebook URLs saved by the learner."
     )
 
     def notebook_location(self):
@@ -101,7 +106,17 @@ class JupterLiteXBlock(XBlock):
     def student_view(self, context=None):
         file_name = self.default_notebook
         base_url = self.jupyterlite_url
-        jupyterlite_iframe = '<iframe src="{}?fromURL={}" width="100%" height="600px" style="border: none;"></iframe>'.format(base_url, file_name)
+        notebook_url = '{}?fromURL={}'.format(base_url, file_name)
+        if notebook_url not in self.viewed_by_learner.split(','):
+            # If notebook URL is not present, add it to the viewed_by_learner
+            if self.viewed_by_learner:
+                self.viewed_by_learner += ',' + notebook_url
+            else:
+                self.viewed_by_learner = notebook_url
+        else:
+            notebook_url = '{}?fromURL='.format(base_url)
+            
+        jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(notebook_url)
         html = self.resource_string("static/html/jupyterlitexblock.html").format(jupyterlite_iframe=jupyterlite_iframe, self=self)
         frag = Fragment(html)
         frag.initialize_js('JupterLiteXBlock')
@@ -126,11 +141,32 @@ class JupterLiteXBlock(XBlock):
         frag.initialize_js('JupterLiteXBlock')
         return frag
     
+    def delete_existing_files(self):
+        """
+        Delete existing files in the notebook folder.
+        """
+        folder_path = self.folder_base_path
+        if not self.storage.exists(folder_path):
+            return
+        
+        existing_files = self.storage.listdir(folder_path)[1]
+        for filename in existing_files:
+            file_path = f"{folder_path}/{filename}"
+            self.storage.delete(file_path)
+    
     def save_file(self, uploaded_file):
+        self.delete_existing_files()
         path = self.storage.save(f'{self.folder_base_path}/{uploaded_file.name}', ContentFile(uploaded_file.read()))
-        uploaded_file_url = self.storage.url(path)
+        url = self.storage.url(path)
+        if url.startswith(('http://', 'https://')):
+            uploaded_file_url = url
+        else:
+            scheme = "https" if settings.HTTPS == "on" else "http"
+            root_url = f'{scheme}://{settings.CMS_BASE}'
+            uploaded_file_url = root_url+url
+            
         return uploaded_file_url
-
+    
     @XBlock.handler
     def studio_submit(self, request, _suffix):
         """
