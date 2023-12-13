@@ -13,7 +13,7 @@ Usage
 
 In the Studio, go to the advanced settings of your course ("Settings" 🡒 "Advanced Settings"). In the "Advanced Module List" add "jupyterlite". Then hit "Save changes".
 
-Add these settings to enable S3 Storage. Please make sure your bucket's CORS allow Jupyter service URL
+Add these settings to enable S3 Storage. Please make sure your bucket's CORS allow JupyterLite service URL
 
     XBLOCK_SETTINGS["JupterLiteXBlock"] = {
         "STORAGE_FUNC": "jupyterlitexblock.storage.s3",
