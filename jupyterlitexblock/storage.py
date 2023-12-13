@@ -14,6 +14,7 @@ class S3JupyterLiteStorage(S3Boto3Storage):
         self.xblock = xblock
         super().__init__(
             bucket_name=bucket_name,
+            querystring_auth=False,
         )
 
 
