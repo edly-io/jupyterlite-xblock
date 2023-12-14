@@ -24,7 +24,7 @@ def package_data(pkg, roots):
 
 setup(
     name='jupyterlite-xblock',
-    version='16.0.6',
+    version='16.0.7',
     description='Jupyterlite XBlock to embed jupyterlite service inside open edX',
     license='AGPL v3',
     packages=[
