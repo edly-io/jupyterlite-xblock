@@ -19,6 +19,8 @@ log = logging.getLogger(__name__)
 
 
 @XBlock.wants("settings")
+@XBlock.wants('user')
+@XBlock.wants('i18n')
 class JupterLiteXBlock(XBlock):
     """
        EdX XBlock for embedding JupyterLite, allowing learners to interact with Jupyter notebooks.
@@ -75,6 +77,17 @@ class JupterLiteXBlock(XBlock):
         return os.path.join(self.notebook_location(), self.location.block_id)
 
     @property
+    def in_staff_view(self):
+        """
+        Returns boolean indicating if blocks is loaded by staff
+        """
+        user_service = self.runtime.service(self, 'user')
+        user = user_service.get_current_user()
+        is_staff = True if user.opt_attrs.get('edx-platform.user_is_staff', False) or \
+        user.opt_attrs.get('edx-platform.user_role') == 'instructor' else False        
+        return is_staff
+
+    @property
     def storage(self):
         """
         Return the storage backend used to store the assets of this xblock. This is a cached property.
@@ -102,21 +115,18 @@ class JupterLiteXBlock(XBlock):
         template = Template(template_str)
         rendered_template = template.render(Context(context))
         return rendered_template
-    
-    def student_view(self, context=None):
-        file_name = self.default_notebook
-        base_url = self.jupyterlite_url
-        notebook_url = '{}?fromURL={}'.format(base_url, file_name)
-        if notebook_url not in self.viewed_by_learner.split(','):
-            # If notebook URL is not present, add it to the viewed_by_learner
-            if self.viewed_by_learner:
-                self.viewed_by_learner += ',' + notebook_url
-            else:
-                self.viewed_by_learner = notebook_url
-        else:
-            notebook_url = '{}?fromURL='.format(base_url)
+
+    def student_view(self, context=None):        
+        file_name = os.path.basename(self.default_notebook) if self.default_notebook else ''
+        url = self.jupyterlite_url
+        if self.default_notebook:
+            if self.in_staff_view:
+                url += f'?fromURL={self.default_notebook}'
+            elif file_name not in self.viewed_by_learner.split(','):
+                self.viewed_by_learner += ',' + file_name
+                url += f'?fromURL={self.default_notebook}'
             
-        jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(notebook_url)
+        jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(url)
         html = self.resource_string("static/html/jupyterlitexblock.html").format(jupyterlite_iframe=jupyterlite_iframe, self=self)
         frag = Fragment(html)
         frag.initialize_js('JupterLiteXBlock')
