@@ -15,6 +15,9 @@ from django.utils.module_loading import import_string
 from webob import Response
 
 
+# Make '_' a no-op so we can scrape strings
+_ = lambda text: text
+
 log = logging.getLogger(__name__)
 
 
@@ -27,25 +30,25 @@ class JupterLiteXBlock(XBlock):
 
 
     jupyterlite_url = String(
-        display_name="JupyterLite Service URL",
+        display_name=_("JupyterLite Service URL"),
         help="The URL of the JupyterLite service",
         scope=Scope.settings,
         default="http://jupyterlite.local.overhang.io:9500/lab/index.html"
     )
     default_notebook = String(
-        display_name="Default Notebook",
+        display_name=_("Default Notebook"),
         scope=Scope.content,
-        help="The default notebook for the JupyterLite service",
+        help=_("The default notebook for the JupyterLite service"),
         default=""
     )
     display_name = String(
-        display_name=("JupyterLite"),
-        help=("Display name for this module"),
+        display_name=_("JupyterLite"),
+        help=_("Display name for this module"),
         default="JupyterLite Notebook",
         scope=Scope.settings
     )
     viewed_by_learner = String(
-        display_name="Saved Notebook URLs",
+        display_name=_("Saved Notebook URLs"),
         default="",
         scope=Scope.user_state,
         help="List of notebook URLs saved by the learner."
@@ -102,21 +105,17 @@ class JupterLiteXBlock(XBlock):
         template = Template(template_str)
         rendered_template = template.render(Context(context))
         return rendered_template
-    
-    def student_view(self, context=None):
-        file_name = self.default_notebook
-        base_url = self.jupyterlite_url
-        notebook_url = '{}?fromURL={}'.format(base_url, file_name)
-        if notebook_url not in self.viewed_by_learner.split(','):
-            # If notebook URL is not present, add it to the viewed_by_learner
-            if self.viewed_by_learner:
-                self.viewed_by_learner += ',' + notebook_url
-            else:
-                self.viewed_by_learner = notebook_url
+
+    def student_view(self, context=None):        
+        file_name = os.path.basename(self.default_notebook) if self.default_notebook else ''
+        url = self.jupyterlite_url
+        if file_name not in self.viewed_by_learner.split(','):
+            self.viewed_by_learner += ',' + file_name
+            url += f'?fromURL={self.default_notebook}'
         else:
-            notebook_url = '{}?fromURL='.format(base_url)
+            url += f'?path={file_name}'
             
-        jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(notebook_url)
+        jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(url)
         html = self.resource_string("static/html/jupyterlitexblock.html").format(jupyterlite_iframe=jupyterlite_iframe, self=self)
         frag = Fragment(html)
         frag.initialize_js('JupterLiteXBlock')
