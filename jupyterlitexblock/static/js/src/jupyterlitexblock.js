@@ -1,10 +1,7 @@
 /* Javascript for JupterLiteXBlock. */
-function JupterLiteXBlock(runtime, element) {
-  var getCompletionDelayUrl = runtime.handlerUrl(
-    element,
-    "get_completion_delay_seconds"
-  );
+function JupterLiteXBlock(runtime, element, initArgs) {
   var markCompleteUrl = runtime.handlerUrl(element, "mark_complete");
+  var completionDelaySeconds = initArgs.completion_delay_seconds;
 
   function checkCompletion(delaySeconds) {
     setTimeout(function () {
@@ -14,30 +11,16 @@ function JupterLiteXBlock(runtime, element) {
         data: JSON.stringify({}),
         success: function (response) {
           if (response.result === "success") {
+            console.log("Successfully Timesout after seconds :", delaySeconds);
           }
         },
       });
     }, delaySeconds * 1000);
   }
 
-  function getCompletionDelay() {
-    $.ajax({
-      type: "POST",
-      url: getCompletionDelayUrl,
-      data: JSON.stringify({}),
-      contentType: "application/json",
-      dataType: "json",
-      success: function (data) {
-        var delaySeconds = data.delay;
-        checkCompletion(delaySeconds);
-      },
-    });
-  }
-
   $(function ($) {
-    getCompletionDelay();
+    checkCompletion(completionDelaySeconds);
   });
-
   $(element)
     .find(".save-button")
     .bind("click", function (event) {

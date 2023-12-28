@@ -1,11 +1,10 @@
 """XBlock for embedding JupyterLite in Open edX."""
 
-import pkg_resources
-import os
+import pkg_resources,os
 from web_fragments.fragment import Fragment
 from xblock.core import XBlock
 from django.core.files.base import ContentFile
-from xblock.fields import Scope, String, Integer
+from xblock.fields import Scope, String
 from django.template import Context, Template
 import logging
 import json
@@ -18,8 +17,7 @@ from xblock.completable import CompletableXBlockMixin
 
 
 # Make '_' a no-op so we can scrape strings
-def _(text): return text
-
+_ = lambda text: text
 
 log = logging.getLogger(__name__)
 
@@ -30,6 +28,7 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
        EdX XBlock for embedding JupyterLite, allowing learners to interact with Jupyter notebooks.
        Instructors can configure JupyterLite settings in Studio, and learners access notebooks in the LMS 
     """
+
 
     jupyterlite_url = String(
         display_name=_("JupyterLite Service URL"),
@@ -89,8 +88,7 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
             def get_default_storage(_xblock, bucket_name):
                 return default_storage
 
-            storage_func = self.xblock_settings.get(
-                "STORAGE_FUNC", get_default_storage)
+            storage_func = self.xblock_settings.get("STORAGE_FUNC", get_default_storage)
             if isinstance(storage_func, str):
                 storage_func = import_string(storage_func)
             bucket_name = self.xblock_settings.get("S3_BUCKET_NAME", None)
@@ -109,24 +107,23 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
         rendered_template = template.render(Context(context))
         return rendered_template
 
-    def student_view(self, context=None):
-        file_name = os.path.basename(
-            self.default_notebook) if self.default_notebook else ''
+    def student_view(self, context=None):        
+        file_name = os.path.basename(self.default_notebook) if self.default_notebook else ''
         url = self.jupyterlite_url
         if file_name not in self.viewed_by_learner.split(','):
             self.viewed_by_learner += ',' + file_name
             url += f'?fromURL={self.default_notebook}'
         else:
             url += f'?path={file_name}'
-
-        jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(
-            url)
-        html = self.resource_string("static/html/jupyterlitexblock.html").format(
-            jupyterlite_iframe=jupyterlite_iframe, self=self)
+            
+        jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(url)
+        html = self.resource_string("static/html/jupyterlitexblock.html").format(jupyterlite_iframe=jupyterlite_iframe, self=self)
         frag = Fragment(html)
-        frag.add_javascript(self.resource_string(
-            "static/js/src/jupyterlitexblock.js"))
+        frag.add_javascript(self.resource_string("static/js/src/jupyterlitexblock.js"))
         frag.initialize_js('JupterLiteXBlock')
+        frag.initialize_js('JupterLiteXBlock', json_args={
+        'completion_delay_seconds': self.xblock_settings.get("COMPLETION_DELAY_SECONDS", 5)
+         })
         return frag
 
     @staticmethod
@@ -134,41 +131,36 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
         return Response(
             json.dumps(data), content_type="application/json", charset="utf8"
         )
-
+    
     def studio_view(self, context=None):
-        notebook_name = os.path.basename(
-            self.default_notebook) if self.default_notebook else ""
+        notebook_name = os.path.basename(self.default_notebook) if self.default_notebook else ""
         studio_context = {
             "jupyterlite_url": self.jupyterlite_url,
             "notebook_name": notebook_name,
-        }
+        } 
         studio_context.update(context or {})
-        template = self.render_template(
-            "static/html/upload.html", studio_context)
+        template = self.render_template("static/html/upload.html", studio_context)
         frag = Fragment(template)
-        print("Test test test")
-        frag.add_javascript(self.resource_string(
-            "static/js/src/jupyterlitexblock.js"))
+        frag.add_javascript(self.resource_string("static/js/src/jupyterlitexblock.js"))
         frag.initialize_js('JupterLiteXBlock')
         return frag
-
+    
     def delete_existing_files(self):
-        """q
+        """
         Delete existing files in the notebook folder.
         """
         folder_path = self.folder_base_path
         if not self.storage.exists(folder_path):
             return
-
+        
         existing_files = self.storage.listdir(folder_path)[1]
         for filename in existing_files:
             file_path = f"{folder_path}/{filename}"
             self.storage.delete(file_path)
-
+    
     def save_file(self, uploaded_file):
         self.delete_existing_files()
-        path = self.storage.save(
-            f'{self.folder_base_path}/{uploaded_file.name}', ContentFile(uploaded_file.read()))
+        path = self.storage.save(f'{self.folder_base_path}/{uploaded_file.name}', ContentFile(uploaded_file.read()))
         url = self.storage.url(path)
         if url.startswith(('http://', 'https://')):
             uploaded_file_url = url
@@ -176,9 +168,9 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
             scheme = "https" if settings.HTTPS == "on" else "http"
             root_url = f'{scheme}://{settings.CMS_BASE}'
             uploaded_file_url = root_url+url
-
+            
         return uploaded_file_url
-
+    
     @XBlock.handler
     def studio_submit(self, request, _suffix):
         """
@@ -190,17 +182,11 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
         response = {"result": "success", "errors": []}
         return self.json_response(response)
 
-    @XBlock.json_handler
-    def get_completion_delay_seconds(self, data, suffix=''):
-        COMPLETION_DELAY_SECONDS = self.xblock_settings.get(
-            "COMPLETION_DELAY_SECONDS", 10)
-        return {'delay': COMPLETION_DELAY_SECONDS}
-
     @XBlock.handler
     def mark_complete(self, request, _suffix):
         """
         Mark this XBlock as completed after the specified delay.
         """
-        print("Hou gya")
+        print("Zia bhai")
         self.emit_completion(1.0)
         return Response(json.dumps({"result": "success"}), content_type='application/json; charset=UTF-8')
