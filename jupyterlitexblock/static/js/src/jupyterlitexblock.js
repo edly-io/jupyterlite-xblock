@@ -11,7 +11,6 @@ function JupterLiteXBlock(runtime, element, initArgs) {
         data: JSON.stringify({}),
         success: function (response) {
           if (response.result === "success") {
-            console.log("Successfully Timesout after seconds :", delaySeconds);
           }
         },
       });

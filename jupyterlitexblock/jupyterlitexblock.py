@@ -187,6 +187,5 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
         """
         Mark this XBlock as completed after the specified delay.
         """
-        print("Zia bhai")
         self.emit_completion(1.0)
         return Response(json.dumps({"result": "success"}), content_type='application/json; charset=UTF-8')
