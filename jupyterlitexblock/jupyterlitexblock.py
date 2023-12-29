@@ -13,6 +13,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.utils.module_loading import import_string
 from webob import Response
+from xblock.completable import CompletableXBlockMixin
 
 
 # Make '_' a no-op so we can scrape strings
@@ -22,7 +23,7 @@ log = logging.getLogger(__name__)
 
 
 @XBlock.wants("settings")
-class JupterLiteXBlock(XBlock):
+class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
     """
        EdX XBlock for embedding JupyterLite, allowing learners to interact with Jupyter notebooks.
        Instructors can configure JupyterLite settings in Studio, and learners access notebooks in the LMS 
@@ -118,7 +119,11 @@ class JupterLiteXBlock(XBlock):
         jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(url)
         html = self.resource_string("static/html/jupyterlitexblock.html").format(jupyterlite_iframe=jupyterlite_iframe, self=self)
         frag = Fragment(html)
+        frag.add_javascript(self.resource_string("static/js/src/jupyterlitexblock.js"))
         frag.initialize_js('JupterLiteXBlock')
+        frag.initialize_js('JupterLiteXBlock', json_args={
+        'completion_delay_seconds': self.xblock_settings.get("COMPLETION_DELAY_SECONDS", 5)
+         })
         return frag
 
     @staticmethod
@@ -176,3 +181,11 @@ class JupterLiteXBlock(XBlock):
         self.default_notebook = self.save_file(notebook)
         response = {"result": "success", "errors": []}
         return self.json_response(response)
+
+    @XBlock.handler
+    def mark_complete(self, request, _suffix):
+        """
+        Mark this XBlock as completed after the specified delay.
+        """
+        self.emit_completion(1.0)
+        return Response(json.dumps({"result": "success"}), content_type='application/json; charset=UTF-8')
