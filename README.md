@@ -33,7 +33,7 @@ tutor [dev|local] launch
 ### **Update Advanced Settings of course**
 Update course advanced settings by adding `jupyterlite_xblock` as shown in below image and save changes 
 
-![Update settings image](https://github.com/edly-io/jupyterlite-xblock/blob/main/docs/images/update-settings.png?raw=True)
+![Update settings image](https://github.com/edly-io/jupyterlite-xblock/blob/master/docs/images/update-settings.png?raw=True)
 
 Now you can access the jupyterlite xblock feature in the advanced component of course unit
 
@@ -57,7 +57,7 @@ If a notebook is already uploaded, it will display its name. You can replace it 
  After configuring the settings, click on the "Save" button to apply the changes.
 
 
-![Configure Jupyter Lite XBlock Image](https://github.com/edly-io/ai-coach-xblock/blob/main/docs/images/upload-jupyter-notebook.png?raw=True)
+![Configure Jupyter Lite XBlock Image](https://github.com/edly-io/ai-coach-xblock/blob/master/docs/images/upload-jupyter-notebook.png?raw=True)
 
 #### **Add these settings to enable S3 Storage.**
 Please make sure your bucket's CORS allow JupyterLite service URL
@@ -77,4 +77,4 @@ Configure the delay for marking an activity as complete. The default is 5 second
 
 Use "Preview" button to preview it or publish your content and use "View Live Version" button to see how it appears on LMS
 
-![View Jupyter Lite XBlock Image](https://github.com/edly-io/ai-coach-xblock/blob/main/docs/images/preview.png?raw=True)
+![View Jupyter Lite XBlock Image](https://github.com/edly-io/ai-coach-xblock/blob/master/docs/images/preview.png?raw=True)
