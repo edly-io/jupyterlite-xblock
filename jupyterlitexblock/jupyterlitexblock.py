@@ -14,10 +14,11 @@ from django.core.files.storage import default_storage
 from django.utils.module_loading import import_string
 from webob import Response
 from xblock.completable import CompletableXBlockMixin
+from django.utils.translation import gettext as _
 
 
 # Make '_' a no-op so we can scrape strings
-_ = lambda text: text
+# _ = lambda text: text
 
 log = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
     display_name = String(
         display_name=_("JupyterLite"),
         help=_("Display name for this module"),
-        default="JupyterLite Notebook",
+        default=_("JupyterLite Notebook"),
         scope=Scope.settings
     )
     viewed_by_learner = String(
@@ -116,7 +117,8 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
         else:
             url += f'?path={file_name}'
             
-        jupyterlite_iframe = '<iframe src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(url)
+        refresh_btn_text = _("Refresh Jupyterlite")
+        jupyterlite_iframe = '<button class="refresh-jupyterlite-xblock-btn">{}</button></br></br><iframe class="jupyterlite-xblock" src="{}" width="100%" height="600px" style="border: none;"></iframe>'.format(refresh_btn_text, url)
         html = self.resource_string("static/html/jupyterlitexblock.html").format(jupyterlite_iframe=jupyterlite_iframe, self=self)
         frag = Fragment(html)
         frag.add_javascript(self.resource_string("static/js/src/jupyterlitexblock.js"))
@@ -189,3 +191,12 @@ class JupterLiteXBlock(CompletableXBlockMixin, XBlock):
         """
         self.emit_completion(1.0)
         return Response(json.dumps({"result": "success"}), content_type='application/json; charset=UTF-8')
+    
+    @XBlock.handler
+    def refresh_jupyterlite_xblock(self, request, _suffix):
+        """
+        Refreshes the XBlock.
+        """
+        self.viewed_by_learner = ""
+        notebook_url = (self.jupyterlite_url + f'?fromURL={self.default_notebook}') if self.default_notebook else ""
+        return Response(json.dumps({"result": "success", "notebook_url": notebook_url}), content_type='application/json; charset=UTF-8')

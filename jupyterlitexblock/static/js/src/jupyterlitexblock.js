@@ -1,7 +1,32 @@
 /* Javascript for JupterLiteXBlock. */
 function JupterLiteXBlock(runtime, element, initArgs) {
   var markCompleteUrl = runtime.handlerUrl(element, "mark_complete");
+  var refreshJupyterliteXblock = runtime.handlerUrl(
+    element,
+    "refresh_jupyterlite_xblock"
+  );
   var completionDelaySeconds = initArgs.completion_delay_seconds;
+
+  function refreshJupyterliteXblockHandler() {
+    $.ajax({
+      type: "POST",
+      url: refreshJupyterliteXblock,
+      data: JSON.stringify({}),
+      success: function (response) {
+        if (response.result === "success") {
+          var iframeElement = $(element).find(".jupyterlite-xblock");
+          if (iframeElement.length > 0 && response.notebook_url) {
+            iframeElement.attr("src", response.notebook_url);
+          }
+        }
+      },
+    });
+  }
+  $(element)
+    .find(".refresh-jupyterlite-xblock-btn")
+    .on("click", function () {
+      refreshJupyterliteXblockHandler();
+    });
 
   function checkCompletion(delaySeconds) {
     setTimeout(function () {

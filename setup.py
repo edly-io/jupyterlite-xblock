@@ -38,5 +38,5 @@ setup(
             'jupyterlite = jupyterlitexblock:JupterLiteXBlock',
         ]
     },
-    package_data=package_data("jupyterlitexblock", ["static", "public"]),
+    package_data=package_data("jupyterlitexblock", ["static", "public", "locale"]),
 )
