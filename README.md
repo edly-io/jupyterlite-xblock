@@ -57,7 +57,7 @@ If a notebook is already uploaded, it will display its name. You can replace it 
  After configuring the settings, click on the "Save" button to apply the changes.
 
 
-![Configure Jupyter Lite XBlock Image](https://github.com/edly-io/ai-coach-xblock/blob/master/docs/images/upload-jupyter-notebook.png?raw=True)
+![Configure Jupyter Lite XBlock Image](https://github.com/edly-io/jupyterlite-xblock/blob/master/docs/images/upload-jupyter-notebook.png?raw=True)
 
 #### **Add these settings to enable S3 Storage.**
 Please make sure your bucket's CORS allow JupyterLite service URL
@@ -77,4 +77,4 @@ Configure the delay for marking an activity as complete. The default is 5 second
 
 Use "Preview" button to preview it or publish your content and use "View Live Version" button to see how it appears on LMS
 
-![View Jupyter Lite XBlock Image](https://github.com/edly-io/ai-coach-xblock/blob/master/docs/images/preview.png?raw=True)
+![View Jupyter Lite XBlock Image](https://github.com/edly-io/jupyterlite-xblock/blob/master/docs/images/preview.png?raw=True)
