@@ -40,7 +40,7 @@ Now you can access the jupyterlite xblock feature in the advanced component of c
 
 #### **Update settings of Jupyter Component**
 
-AI Coach Xblock will be available in Advanced component of course unit now. Add "JupyterLite" xblock in unit and click "Edit" button
+JupyterLite Xblock will be available in Advanced component of course unit now. Add "JupyterLite" xblock in unit and click "Edit" button
 Access Edit Settings: Once the XBlock is added, click on the "Edit" button to open the configuration settings.
 
 #### **Set JupyterLite Service URL:**
