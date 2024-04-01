@@ -26,6 +26,8 @@ setup(
     name='jupyterlite-xblock',
     version='16.0.8',
     description='Jupyterlite XBlock to embed jupyterlite service inside open edX',
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',    
     license='AGPL v3',
     packages=[
         'jupyterlitexblock',
