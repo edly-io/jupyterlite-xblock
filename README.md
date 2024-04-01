@@ -69,9 +69,10 @@ Please make sure your bucket's CORS allow JupyterLite service URL
 
 #### Completion Delay Setting: 
 Configure the delay for marking an activity as complete. The default is 5 seconds, but it can be adjusted to suit course needs. The setting 'completion_delay_seconds' in XBLOCK_SETTINGS allows you to specify the delay in seconds.
-```bash
-'completion_delay_seconds': self.xblock_settings.get("COMPLETION_DELAY_SECONDS", 5)
-```
+
+    XBLOCK_SETTINGS["JupterLiteXBlock"] = {
+        "COMPLETION_DELAY_SECONDS": 10
+    }
 
 ### **Publish Content**
 
